@@ -6,8 +6,7 @@ jobs:
     working_directory: /go/src/github.com/nluong9/invoicer-chapter3
   
     docker:
-      - image: circleci/golang:latest-node-browsers-legacy
-      # - image: circleci/golang:1.8
+      - image: circleci/golang:1.10
     environment:
       GO15VENDOREXPERIMENT: 1
     branches:
