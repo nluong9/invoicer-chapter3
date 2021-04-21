@@ -27,6 +27,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
+	"github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/wader/gormstore"
 	"golang.org/x/oauth2"
 )
