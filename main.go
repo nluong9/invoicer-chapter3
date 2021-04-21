@@ -89,9 +89,8 @@ func main() {
 	r.HandleFunc("/oauth2callback", iv.getOAuth2Callback).Methods("GET")
 
 	// handle static files
-	r.Handle("/statics/{staticfile}",
-		http.StripPrefix("/statics/", http.FileServer(http.Dir("./statics"))),
-	).Methods("GET")
+	r.Handle("/statics/{staticfile}", getStaticFiles).Methods("GET")
+	// r.Handle("/statics/{staticfile}", http.StripPrefix("/statics/", http.FileServer(http.Dir("./statics")))).Methods("GET")
 
 	// all set, start the http handler
 	log.Fatal(http.ListenAndServe(":8080", r))
@@ -244,6 +243,11 @@ func (iv *invoicer) getIndex(w http.ResponseWriter, r *http.Request) {
 
 func getHeartbeat(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("I am alive"))
+}
+
+func getStaticFiles(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("X-Content-Type-Options", "nosniff")
+	http.StripPrefix("/statics/", http.FileServer(http.Dir("./statics")))
 }
 
 // handleVersion returns the current version of the API
