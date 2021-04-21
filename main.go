@@ -245,10 +245,10 @@ func getHeartbeat(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("I am alive"))
 }
 
-func getStaticFiles(w http.ResponseWriter, r *http.Request) {
+var getStaticFiles = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("X-Content-Type-Options", "nosniff")
 	http.StripPrefix("/statics/", http.FileServer(http.Dir("./statics")))
-}
+})
 
 // handleVersion returns the current version of the API
 func getVersion(w http.ResponseWriter, r *http.Request) {
