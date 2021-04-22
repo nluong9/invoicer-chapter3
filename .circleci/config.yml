@@ -60,7 +60,7 @@ jobs:
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               docker logout;
-              docker login -u ${DOCKER_USER} -p ${DOCKER_PASS};
+              docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} docker.io;
               go install --ldflags '-extldflags "-static"' github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME};
               mkdir -p bin;
               cp "$GOPATH_HEAD/bin/${CIRCLE_PROJECT_REPONAME}" bin/invoicer;
