@@ -29,8 +29,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/wader/gormstore"
 	"golang.org/x/oauth2"
-	_ "gorm.io/driver/postgres"
-	_ "gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -54,7 +54,7 @@ func main() {
 			os.Getenv("INVOICER_POSTGRES_PASSWORD"),
 			os.Getenv("INVOICER_POSTGRES_DB"),
 			os.Getenv("INVOICER_POSTGRES_SSLMODE"))
-		db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 		// db, err = gorm.Open("postgres", fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s",
 		// 	os.Getenv("INVOICER_POSTGRES_USER"),
@@ -68,7 +68,7 @@ func main() {
 		// db, err = gorm.Open("sqlite3", "invoicer.db")
 
 		log.Println("Opening sqlite connection")
-		db, err := gorm.Open(sqlite.Open("invoicer.db"), &gorm.Config{})
+		db, err = gorm.Open(sqlite.Open("invoicer.db"), &gorm.Config{})
 	}
 	if err != nil {
 		panic("failed to connect database")
