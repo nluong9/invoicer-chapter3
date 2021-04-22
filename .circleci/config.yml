@@ -21,9 +21,6 @@ jobs:
       - run: mkdir -p "${GOPATH_BASE}"
       - run: mkdir -p "${GOPATH_HEAD}/bin"
       - run: go get github.com/govend/govend
-      - run: go get -u gorm.io/gorm
-      - run: go get -u gorm.io/driver/postgres
-      - run: go get -u gorm.io/driver/sqlite
 
       - run:
           name: Build application container
@@ -52,9 +49,9 @@ jobs:
             if [ $? -ne 1 ]; then exit 0; else exit 1; fi;
             )
 
-      - run:
-          name: Test dependencies are up to date
-          command: 'GOPATH="${GOPATH_HEAD}"; ( cd ${GOPATH_BASE}/${CIRCLE_PROJECT_REPONAME} && govend -u --prune && git diff --quiet )'
+      # - run:
+      #     name: Test dependencies are up to date
+      #     command: 'GOPATH="${GOPATH_HEAD}"; ( cd ${GOPATH_BASE}/${CIRCLE_PROJECT_REPONAME} && govend -u --prune && git diff --quiet )'
 
       - deploy:
           # Push application container to dockerhub
