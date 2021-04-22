@@ -4,6 +4,7 @@
 //
 // _ "github.com/jinzhu/gorm/dialects/postgres"
 // _ "github.com/jinzhu/gorm/dialects/sqlite"
+// "github.com/jinzhu/gorm"
 //
 // Contributor: Julien Vehent jvehent@mozilla.com [:ulfr]
 package main
@@ -19,7 +20,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	_ "math/bits"
 	"net/http"
 	"os"
 	"strconv"
@@ -27,11 +27,11 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/wader/gormstore"
 	"golang.org/x/oauth2"
+	_ "gorm.io/driver/postgres"
+	_ "gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 type invoicer struct {
