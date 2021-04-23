@@ -6,8 +6,8 @@ RUN addgroup -g 10001 app && \
 RUN mkdir /app/statics/
 ADD statics /app/statics/
 
-#COPY bin/invoicer /app/invoicer
-#USER app
-#XPOSE 8080
-#WORKDIR /app
-#ENTRYPOINT /app/invoicer
+COPY bin/invoicer /app/invoicer
+USER app
+XPOSE 8080
+WORKDIR /app
+ENTRYPOINT /app/invoicer
