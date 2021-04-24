@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 
-# Required for run at local
-# Need install under tool from AWS
-# Install via PIP of python (required installed python on current PC)
-# $_> pip install awscli awsebcli
-# 
-# Install with other way then read here https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
+# requires: pip install awscli awsebcli
 
 # uncomment to debug
 #set -x
@@ -15,14 +10,10 @@ fail() {
     exit 1
 }
 
-export LC_ALL=C
-export LC_CTYPE=C
-export AWS_REGION=eu-west-3
-export AWS_DEFAULT_REGION=${AWS_REGION:-eu-west-3}
+export AWS_DEFAULT_REGION=${AWS_REGION:-us-east-1}
 
 datetag=$(date +%Y%m%d%H%M)
-identifier=$(whoami)ivcr$datetag
-cname=$identifier-chapter2
+identifier=$(whoami)-invoicer-$datetag
 mkdir -p tmp/$identifier
 
 echo "Creating EBS application $identifier"
@@ -43,7 +34,7 @@ echo "DB security group is $dbsg"
 # Create the database
 dbinstclass="db.t2.micro"
 dbstorage=5
-dbpass=$(dd if=/dev/urandom bs=128 count=1 2>/dev/null | tr -dc _A-Z-a-z-0-9)
+dbpass=$(dd if=/dev/urandom bs=128 count=1 2>/dev/null| tr -dc _A-Z-a-z-0-9)
 aws rds create-db-instance \
     --db-name invoicer \
     --db-instance-identifier "$identifier" \
@@ -85,30 +76,13 @@ aws elasticbeanstalk create-application \
 echo "ElasticBeanTalk application created"
 
 # Get the name of the latest Docker solution stack
-# dockerstack="$(aws elasticbeanstalk list-available-solution-stacks | jq -r '.SolutionStacks[]' | grep -P '.+Amazon Linux.+running Docker.+' | head -1)"
-dockerstack="$(aws elasticbeanstalk list-available-solution-stacks | jq -r '.SolutionStacks[]' | grep -e '.Docker*' | head -1)"
-echo "Docker Stack: $dockerstack"
+dockerstack="$(aws elasticbeanstalk list-available-solution-stacks | \
+    jq -r '.SolutionStacks[]' | grep -P '.+Amazon Linux.+Docker.+' | head -1)"
 
 # Create the EB API environment
-# sed "s/POSTGRESPASSREPLACEME/$dbpass/" ebs-options.json > tmp/$identifier/ebs-options.json || fail
-# sed -i "s/POSTGRESHOSTREPLACEME/$dbhost/" tmp/$identifier/ebs-options.json || fail
-sed -e "s:POSTGRESPASSREPLACEME:$dbpass:g" -e "s:POSTGRESHOSTREPLACEME:$dbhost:g" ebs-options.json > tmp/$identifier/ebs-options.json || fail
-
-
-# Upload the application version
-aws s3 mb s3://$identifier
-aws s3 cp app-version.json s3://$identifier/
-echo "Done create s3 bucket at s3://$identifier/app-version.json"
-
-# create applicate version for elasticbeanstalk
-aws elasticbeanstalk create-application-version \
-    --application-name "$identifier" \
-    --version-label invoicer-api \
-    --source-bundle "S3Bucket=$identifier,S3Key=app-version.json" > tmp/$identifier/app-version-s3.json
-echo "Created application version for elasticbeanstalk"
-
+sed "s/POSTGRESPASSREPLACEME/$dbpass/" ebs-options.json > tmp/$identifier/ebs-options.json || fail
+sed -i "s/POSTGRESHOSTREPLACEME/$dbhost/" tmp/$identifier/ebs-options.json || fail
 aws elasticbeanstalk create-environment \
-    --cname-prefix $cname \
     --application-name $identifier \
     --environment-name $identifier-invoicer-api \
     --description "Invoicer API environment" \
@@ -128,7 +102,6 @@ do
     echo -n '.'
     sleep 10
 done
-
 echo
 aws ec2 describe-instances --instance-ids $ec2id > tmp/$identifier/${ec2id}.json || fail
 sgid=$(jq -r '.Reservations[0].Instances[0].SecurityGroups[0].GroupId' tmp/$identifier/${ec2id}.json)
@@ -136,13 +109,12 @@ aws ec2 authorize-security-group-ingress --group-id $dbsg --source-group $sgid -
 echo "API security group $sgid authorized to connect to database security group $dbsg"
 
 # Upload the application version
-
-# aws s3 mb s3://$identifier
-# aws s3 cp app-version.json s3://$identifier/
-# aws elasticbeanstalk create-application-version \
-#     --application-name "$identifier" \
-#     --version-label invoicer-api \
-#     --source-bundle "S3Bucket=$identifier,S3Key=app-version.json" > tmp/$identifier/app-version-s3.json
+aws s3 mb s3://$identifier
+aws s3 cp app-version.json s3://$identifier/
+aws elasticbeanstalk create-application-version \
+    --application-name "$identifier" \
+    --version-label invoicer-api \
+    --source-bundle "S3Bucket=$identifier,S3Key=app-version.json" > tmp/$identifier/app-version-s3.json
 
 # Wait for the environment to be ready (green)
 echo -n "waiting for environment"
@@ -163,3 +135,4 @@ aws elasticbeanstalk update-environment \
 
 url="$(jq -r '.CNAME' tmp/$identifier/$apieid.json)"
 echo "Environment is being deployed. Public endpoint is http://$url"
+
